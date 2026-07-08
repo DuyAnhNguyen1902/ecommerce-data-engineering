@@ -37,7 +37,7 @@ class ExcelReader:
     def read_latest_file(self):
         latest_file = self.get_latest_excel_file()
 
-        print(f"Using file: {latest_file}")
+        
 
         sheet_data = {}
         xls = pd.ExcelFile(latest_file)
