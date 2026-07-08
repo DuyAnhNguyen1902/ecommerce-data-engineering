@@ -21,7 +21,7 @@ def load_raw():
 
             try:
                 logger.info(f"Start loading raw.{table_name}")
-                print(f"Loading raw.{table_name}")
+                
 
                 create_raw_table(db, df, table_name)
                 truncate_raw_table(db, table_name)
@@ -58,7 +58,7 @@ def load_raw():
                 logger.error(f"Failed loading raw.{table_name}: {e}")
                 raise
 
-        print("✅ RAW LOAD DONE")
+        
         logger.info("RAW LOAD DONE")
 
     finally:
