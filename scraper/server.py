@@ -16,6 +16,7 @@ def start_frontend():
     )
 
     logger.info("React frontend started")
+
     time.sleep(10)
 
 
@@ -29,6 +30,7 @@ def start_backend():
     )
 
     logger.info("Spring Boot backend started")
+
     time.sleep(10)
 
 

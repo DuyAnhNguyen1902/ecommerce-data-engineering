@@ -9,12 +9,21 @@ def login(driver, email, password):
     logger.info("Opening login page")
 
     driver.get(APP_URL)
+
     time.sleep(2)
 
-    driver.find_element(By.XPATH, "//input[@type='email']").send_keys(email)
+    driver.find_element(
+        By.XPATH,
+        "//input[@type='email']"
+    ).send_keys(email)
+
     time.sleep(1)
 
-    driver.find_element(By.XPATH, "//input[@type='password']").send_keys(password)
+    driver.find_element(
+        By.XPATH,
+        "//input[@type='password']"
+    ).send_keys(password)
+
     time.sleep(1)
 
     driver.find_element(
