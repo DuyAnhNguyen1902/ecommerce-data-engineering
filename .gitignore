@@ -1,12 +1,77 @@
+# =========================
+# Python
+# =========================
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
+*.pyd
+*.so
 
+# Virtual Environment
+venv/
+.venv/
+env/
+
+# =========================
+# Environment Variables
+# =========================
 .env
 
+# =========================
+# Logs
+# =========================
 logs/
+*.log
 
+# =========================
+# Data Files
+# =========================
 file_export/
+data/
+*.xlsx
+*.xls
+*.csv
 
+# =========================
+# IDE
+# =========================
 .vscode/
-
 .idea/
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Airflow
+# =========================
+airflow/logs/
+airflow/airflow.db
+airflow/webserver_config.py
+
+# =========================
+# Docker
+# =========================
+postgres_data/
+pgadmin_data/
+
+# =========================
+# Testing
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Build
+# =========================
+build/
+dist/
+*.egg-info/

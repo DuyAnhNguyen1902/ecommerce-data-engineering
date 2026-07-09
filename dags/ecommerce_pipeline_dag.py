@@ -15,31 +15,31 @@ default_args = {
 with DAG(
     dag_id="ecommerce_data_pipeline",
     default_args=default_args,
-    description="Ecommerce ELT pipeline: raw -> warehouse -> mart",
+    description="Ecommerce ETL Pipeline",
     schedule=None,
     start_date=datetime(2026, 7, 1),
     catchup=False,
-    tags=["ecommerce", "elt", "data-engineering"],
+    tags=["ecommerce", "etl", "postgresql"],
 ) as dag:
 
-    load_raw = BashOperator(
-        task_id="load_raw",
+    extract_raw = BashOperator(
+        task_id="extract_raw",
         bash_command="""
         cd /opt/airflow/project &&
         python -m ingestion.load_raw
         """,
     )
 
-    load_warehouse = BashOperator(
-        task_id="load_warehouse",
+    warehouse_incremental = BashOperator(
+        task_id="warehouse_incremental",
         bash_command="""
         cd /opt/airflow/project &&
         python -m warehouse.load_warehouse
         """,
     )
 
-    load_mart = BashOperator(
-        task_id="load_mart",
+    mart_refresh = BashOperator(
+        task_id="mart_refresh",
         bash_command="""
         cd /opt/airflow/project &&
         python -m mart.load_mart
@@ -53,4 +53,5 @@ with DAG(
         python -m quality.data_quality
         """,
     )
-    load_raw >> load_warehouse >> load_mart >> quality_check
+
+    extract_raw >> warehouse_incremental >> mart_refresh >> quality_check
