@@ -6,21 +6,26 @@ from airflow.operators.bash import BashOperator
 
 default_args = {
     "owner": "duyanh",
+    "depends_on_past": False,
     "retries": 1,
     "retry_delay": timedelta(minutes=5),
 }
 
+
 with DAG(
     dag_id="ecommerce_data_pipeline",
     default_args=default_args,
-    description="Run ecommerce data pipeline",
-    start_date=datetime(2026, 7, 8),
+    description="Load latest Excel export into PostgreSQL raw schema",
     schedule=None,
+    start_date=datetime(2026, 7, 1),
     catchup=False,
-    tags=["ecommerce", "data-engineering"],
+    tags=["ecommerce", "etl"],
 ) as dag:
 
-    run_pipeline = BashOperator(
-        task_id="run_main_pipeline",
-        bash_command="cd /opt/airflow/project && python main.py",
+    load_raw = BashOperator(
+        task_id="load_raw_from_excel",
+        bash_command="""
+        cd /opt/airflow/project &&
+        python -m ingestion.load_raw
+        """,
     )
