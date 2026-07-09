@@ -15,17 +15,42 @@ default_args = {
 with DAG(
     dag_id="ecommerce_data_pipeline",
     default_args=default_args,
-    description="Load latest Excel export into PostgreSQL raw schema",
+    description="Ecommerce ELT pipeline: raw -> warehouse -> mart",
     schedule=None,
     start_date=datetime(2026, 7, 1),
     catchup=False,
-    tags=["ecommerce", "etl"],
+    tags=["ecommerce", "elt", "data-engineering"],
 ) as dag:
 
     load_raw = BashOperator(
-        task_id="load_raw_from_excel",
+        task_id="load_raw",
         bash_command="""
         cd /opt/airflow/project &&
         python -m ingestion.load_raw
         """,
     )
+
+    load_warehouse = BashOperator(
+        task_id="load_warehouse",
+        bash_command="""
+        cd /opt/airflow/project &&
+        python -m warehouse.load_warehouse
+        """,
+    )
+
+    load_mart = BashOperator(
+        task_id="load_mart",
+        bash_command="""
+        cd /opt/airflow/project &&
+        python -m mart.load_mart
+        """,
+    )
+
+    quality_check = BashOperator(
+        task_id="quality_check",
+        bash_command="""
+        cd /opt/airflow/project &&
+        python -m quality.data_quality
+        """,
+    )
+    load_raw >> load_warehouse >> load_mart >> quality_check
