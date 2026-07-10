@@ -1,67 +1,109 @@
 # 🛒 Ecommerce Data Engineering Pipeline
 
-This project is an end-to-end Data Engineering pipeline built around an e-commerce dataset. It demonstrates how raw business data can be collected, processed, transformed, and organized into a layered data warehouse for analytics. The project follows a common data engineering architecture by separating data into Raw, Warehouse, and Mart layers while using Apache Airflow to orchestrate the entire workflow.
+![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql)
+![Apache Airflow](https://img.shields.io/badge/Apache-Airflow-red?logo=apacheairflow)
+![Docker](https://img.shields.io/badge/Docker-Containerized-blue?logo=docker)
+![GitHub](https://img.shields.io/badge/GitHub-Portfolio-black?logo=github)
 
-The pipeline starts by loading exported e-commerce data into the Raw layer of PostgreSQL. The data is then transformed into a structured Warehouse layer using an incremental loading strategy based on PostgreSQL's `ON CONFLICT DO UPDATE`, allowing existing records to be updated without recreating tables. After that, aggregated business metrics are generated in the Mart layer to support reporting and analytical queries. Before the workflow finishes, a Data Quality Check validates that the data has been loaded successfully and meets basic quality requirements.
+An end-to-end **Data Engineering pipeline** that automates data collection, ETL processing, data warehousing, workflow orchestration, and data quality validation for an e-commerce platform.
 
-To make the project closer to a real production environment, the entire system is containerized with Docker, sensitive configuration is managed through environment variables (`.env`), and the ETL pipeline is orchestrated with Apache Airflow. The codebase is organized into independent modules for data ingestion, transformation, data quality validation, and workflow orchestration, making it easier to maintain and extend in the future.
-
-Although this project is designed as a portfolio project, its overall architecture and implementation follow many of the practices commonly used in modern Data Engineering workflows, including incremental ETL, layered data warehousing, workflow automation, modular project structure, and automated data validation.
-
----
-
-# 🏗️ System Architecture
-
-The project follows a layered data architecture to separate raw data ingestion, data transformation, and analytical reporting. This design improves maintainability, scalability, and simplifies future enhancements.
-
-```text
-                    +----------------------+
-                    |   Trendify Exports   |
-                    |    (Excel Files)     |
-                    +----------+-----------+
-                               |
-                               |
-                               v
-                    +----------------------+
-                    |      Raw Layer       |
-                    |   PostgreSQL Schema  |
-                    +----------+-----------+
-                               |
-                               |
-                               v
-                    +----------------------+
-                    |   Warehouse Layer    |
-                    | Incremental ETL      |
-                    | (UPSERT / ON CONFLICT)|
-                    +----------+-----------+
-                               |
-                               |
-                               v
-                    +----------------------+
-                    |      Mart Layer      |
-                    | Aggregated Data Marts|
-                    +----------+-----------+
-                               |
-                               |
-                               v
-                    +----------------------+
-                    |  Data Quality Check  |
-                    +----------+-----------+
-                               |
-                               |
-                               v
-                    +----------------------+
-                    | Ready for Analytics  |
-                    +----------------------+
-
-               Apache Airflow orchestrates the entire pipeline
-```
-
-The ETL workflow is orchestrated by Apache Airflow, where each stage is executed as an independent task. Data is first loaded into the Raw layer, transformed into the Warehouse layer using an incremental loading strategy, refreshed into analytical Data Marts, and finally validated through automated Data Quality Checks before the pipeline completes successfully.
+The project demonstrates how transactional business data can be collected from a web application, transformed through a layered PostgreSQL Data Warehouse, and prepared for business analytics using modern Data Engineering practices.
 
 ---
 
-# 🛠️ Technology Stack
+# 📑 Table of Contents
+
+- [Overview](#-overview)
+- [Key Features](#-key-features)
+- [Project Highlights](#-project-highlights)
+- [Skills Demonstrated](#-skills-demonstrated)
+- [Technology Stack](#-technology-stack)
+- [System Architecture](#-system-architecture)
+- [Data Collection](#-data-collection)
+- [Project Structure](#-project-structure)
+- [ETL Workflow](#-etl-workflow)
+- [Data Warehouse Design](#-data-warehouse-design)
+- [Apache Airflow Workflow](#-apache-airflow-workflow)
+- [Data Quality Validation](#-data-quality-validation)
+- [Getting Started](#-getting-started)
+- [Screenshots](#-screenshots)
+- [Future Improvements](#-future-improvements)
+- [License](#-license)
+- [Author](#-author)
+
+---
+
+# 📌 Overview
+
+This project simulates a complete Data Engineering workflow for an e-commerce system.
+
+Unlike many portfolio projects that rely on static CSV datasets, this project begins with an automated **data collection process**. Selenium interacts with the Trendify e-commerce web application, authenticates users, exports business data into Excel files, and provides the input for the ETL pipeline.
+
+The exported data is loaded into PostgreSQL using a layered architecture consisting of **Raw**, **Warehouse**, and **Mart** schemas.
+
+The Warehouse layer implements **Incremental ETL** using PostgreSQL's `INSERT ... ON CONFLICT DO UPDATE` strategy, allowing the pipeline to insert new records while updating existing ones without creating duplicates.
+
+The Mart layer refreshes analytical datasets using a **TRUNCATE + INSERT** strategy, ensuring that reports always reflect the latest Warehouse data.
+
+Apache Airflow orchestrates the complete workflow while automated Data Quality Checks validate the pipeline before completion.
+
+The project is fully containerized using Docker and follows many of the architectural practices commonly found in modern Data Engineering environments.
+
+---
+
+# ✨ Key Features
+
+- Automated data collection using Selenium
+- Layered PostgreSQL Data Warehouse
+- Incremental ETL using PostgreSQL UPSERT
+- Automated Data Mart refresh
+- Apache Airflow orchestration
+- Dockerized deployment
+- Automated Data Quality validation
+- Secure configuration using environment variables
+- Modular Python architecture
+- GitHub-ready project structure
+
+---
+
+# 📊 Project Highlights
+
+| Feature                   | Status |
+| ------------------------- | ------ |
+| Automated Data Collection | ✅     |
+| PostgreSQL Data Warehouse | ✅     |
+| Raw Layer                 | ✅     |
+| Warehouse Layer           | ✅     |
+| Mart Layer                | ✅     |
+| Incremental ETL           | ✅     |
+| Airflow Workflow          | ✅     |
+| Docker                    | ✅     |
+| Data Quality              | ✅     |
+| Modular Python Project    | ✅     |
+
+---
+
+# 💡 Skills Demonstrated
+
+This project demonstrates practical experience with:
+
+- Python ETL Development
+- PostgreSQL Database Design
+- Incremental Loading Strategies
+- Data Warehouse Architecture
+- Data Mart Design
+- Apache Airflow
+- Docker & Docker Compose
+- Selenium Web Automation
+- Data Quality Validation
+- Workflow Orchestration
+- SQL Data Transformation
+- Git & GitHub
+
+---
+
+# 🛠 Technology Stack
 
 | Category                | Technology              |
 | ----------------------- | ----------------------- |
@@ -71,8 +113,81 @@ The ETL workflow is orchestrated by Apache Airflow, where each stage is executed
 | Containerization        | Docker & Docker Compose |
 | Data Processing         | Pandas                  |
 | Web Automation          | Selenium                |
-| Version Control         | Git & GitHub            |
 | Database Administration | pgAdmin 4               |
+| Version Control         | Git & GitHub            |
+
+---
+
+# 🏗 System Architecture
+
+```text
+                    +---------------------------+
+                    |   Trendify Web Platform   |
+                    | React + Spring Boot API   |
+                    +-------------+-------------+
+                                  |
+                                  |
+                                  ▼
+                    +---------------------------+
+                    |   Selenium Data Scraper   |
+                    +-------------+-------------+
+                                  |
+                                  |
+                                  ▼
+                    +---------------------------+
+                    |     Excel Export Files    |
+                    +-------------+-------------+
+                                  |
+                                  |
+                                  ▼
+                    +---------------------------+
+                    |     PostgreSQL Raw Layer  |
+                    +-------------+-------------+
+                                  |
+                                  |
+                                  ▼
+                    +---------------------------+
+                    | Warehouse Incremental ETL |
+                    | INSERT ... ON CONFLICT    |
+                    +-------------+-------------+
+                                  |
+                                  |
+                                  ▼
+                    +---------------------------+
+                    |       Data Mart Layer     |
+                    |   Aggregated Analytics    |
+                    +-------------+-------------+
+                                  |
+                                  |
+                                  ▼
+                    +---------------------------+
+                    |    Data Quality Checks    |
+                    +-------------+-------------+
+                                  |
+                                  |
+                                  ▼
+                    +---------------------------+
+                    |    Ready for Analytics    |
+                    +---------------------------+
+
+             Apache Airflow orchestrates the ETL workflow
+```
+
+---
+
+# 🕷 Data Collection
+
+Unlike many ETL projects that use pre-existing CSV datasets, this project starts with automated data acquisition.
+
+The Selenium scraper performs the following operations:
+
+1. Launches the Trendify web application.
+2. Authenticates with a valid administrator account.
+3. Navigates through the administration pages.
+4. Exports business data into Excel files.
+5. Stores exported files locally for downstream ETL processing.
+
+The exported Excel files become the input source for the Apache Airflow ETL pipeline.
 
 ---
 
@@ -81,14 +196,14 @@ The ETL workflow is orchestrated by Apache Airflow, where each stage is executed
 ```text
 ecommerce-data-engineering
 │
-├── config/                 # Project configuration
-├── dags/                   # Apache Airflow DAGs
-├── ingestion/              # Load raw data into PostgreSQL
-├── warehouse/              # Warehouse loading process
-├── mart/                   # Data Mart generation
-├── quality/                # Data quality validation
-├── scraper/                # Selenium data collection
-├── sql/                    # SQL scripts
+├── config/
+├── dags/
+├── ingestion/
+├── warehouse/
+├── mart/
+├── quality/
+├── scraper/
+├── sql/
 │   ├── warehouse_init.sql
 │   ├── warehouse_incremental.sql
 │   ├── mart_init.sql
@@ -99,92 +214,190 @@ ecommerce-data-engineering
 ├── docker-compose.yml
 ├── requirements.txt
 ├── README.md
-└── main.py
+└── .env.example
 ```
 
 ---
 
 # ⚙️ ETL Workflow
 
-The ETL pipeline consists of four independent stages managed by Apache Airflow.
+The ETL pipeline is orchestrated by Apache Airflow and consists of four independent stages.
 
-### 1. Extract Raw Data
+Each stage has a single responsibility and only starts after the previous stage has completed successfully.
 
-The pipeline loads exported e-commerce Excel files into the **Raw** schema in PostgreSQL. Existing raw tables are truncated before each load to ensure that the latest exported data is always available for downstream processing.
+## 1. Data Collection
 
-### 2. Warehouse Incremental Loading
+Business data is collected automatically from the Trendify web application using Selenium.
 
-The Warehouse layer transforms raw data into a structured format suitable for analytics. Instead of recreating tables every time, the project uses PostgreSQL's **UPSERT** mechanism (`INSERT ... ON CONFLICT DO UPDATE`) to incrementally update existing records and insert new ones. This approach prevents duplicate records and better reflects how production ETL pipelines are commonly implemented.
+The scraper:
 
-### 3. Mart Refresh
+- Opens the Trendify application
+- Authenticates using administrator credentials
+- Navigates through administration pages
+- Exports business data into Excel files
+- Saves exported files locally
 
-The Mart layer contains aggregated business data for reporting and analytics. Since these tables are derived entirely from the Warehouse layer, each execution refreshes the mart tables using a **TRUNCATE + INSERT** strategy to ensure that analytical results always reflect the latest warehouse data.
+---
 
-### 4. Data Quality Validation
+## 2. Raw Layer
 
-Before the workflow finishes, a Data Quality Check validates that the ETL process completed successfully. The current validation verifies that critical tables contain data after loading. If any validation fails, the Airflow pipeline stops immediately and marks the workflow as failed.
+The exported Excel files are loaded into the PostgreSQL **Raw** schema.
+
+Purpose:
+
+- Preserve original source data
+- Separate ingestion from transformation
+- Provide traceability
+- Simplify debugging
+
+Current Raw tables:
+
+- fact_orders
+- fact_order_items
+- fact_payments
+- fact_reviews
+- fact_product_sales
+- dim_products
+- dim_inventory_status
+
+---
+
+## 3. Warehouse Layer
+
+The Warehouse layer transforms raw data into standardized analytical tables.
+
+Unlike a full refresh approach, the Warehouse implements **Incremental ETL** using PostgreSQL's UPSERT functionality.
+
+```sql
+INSERT ...
+ON CONFLICT (...)
+DO UPDATE
+```
+
+Advantages:
+
+- Prevents duplicate records
+- Supports repeated pipeline execution
+- Updates existing records automatically
+- Reduces processing time
+- Simulates production ETL practices
+
+---
+
+## 4. Mart Layer
+
+The Mart layer stores aggregated business information for reporting and analytics.
+
+Instead of incremental loading, Data Marts are refreshed using:
+
+```text
+TRUNCATE
+
+↓
+
+INSERT
+```
+
+Current Data Marts:
+
+| Table            | Description             |
+| ---------------- | ----------------------- |
+| revenue_by_month | Monthly revenue summary |
+| top_products     | Product performance     |
+| payment_funnel   | Payment status analysis |
+
+This strategy guarantees that reports always reflect the latest Warehouse data.
+
+---
+
+## 5. Data Quality Validation
+
+The final stage validates the ETL pipeline before completion.
+
+Current validation rules:
+
+- Raw tables contain data
+- Warehouse tables contain data
+- Mart tables contain data
+
+Example:
+
+```text
+Running Data Quality Check...
+
+✓ raw.fact_orders: 195 rows
+✓ warehouse.fact_orders: 195 rows
+✓ mart.revenue_by_month: 7 rows
+
+All quality checks passed.
+```
+
+If any validation fails, Apache Airflow marks the workflow as **Failed**.
 
 ---
 
 # 🗄️ Data Warehouse Design
 
-The project follows a three-layer data architecture commonly used in modern Data Engineering solutions.
+The project follows a classic three-layer Data Warehouse architecture.
+
+```text
+Source System
+      │
+      ▼
+Raw Layer
+      │
+      ▼
+Warehouse Layer
+      │
+      ▼
+Mart Layer
+```
 
 ## Raw Layer
 
-The **Raw** schema stores data exactly as it is exported from the source system. No business transformations are applied at this stage, allowing the original data to be preserved for traceability and future processing.
+Stores exported business data exactly as received from the source system.
 
-Main tables:
+Characteristics:
 
-- `fact_orders`
-- `fact_order_items`
-- `fact_payments`
-- `fact_reviews`
-- `fact_product_sales`
-- `dim_products`
-- `dim_inventory_status`
+- Minimal transformation
+- Source of truth
+- Easy to reload
+- Easy to audit
 
 ---
 
 ## Warehouse Layer
 
-The **Warehouse** schema contains cleaned and standardized data that is optimized for analytical processing.
+Stores cleaned and standardized business data.
 
-Unlike the Raw layer, the Warehouse implements **Incremental ETL** using PostgreSQL's `INSERT ... ON CONFLICT DO UPDATE` strategy. Existing records are updated while new records are inserted automatically, preventing duplicate data and allowing the pipeline to run repeatedly without recreating tables.
+Characteristics:
 
-Key characteristics:
-
-- Incremental Loading
+- Structured schema
+- Incremental loading
+- UPSERT strategy
 - Primary Keys
-- UPSERT Strategy
-- Structured Data Types
-- Analytics-ready Tables
+- Analytics-ready
 
 ---
 
 ## Mart Layer
 
-The **Mart** schema contains aggregated datasets designed for reporting and business analysis.
+Stores aggregated business metrics.
 
-Instead of storing detailed transactional records, the Mart layer summarizes information into business-friendly tables.
+Characteristics:
 
-Current Data Marts include:
-
-| Table            | Description             |
-| ---------------- | ----------------------- |
-| revenue_by_month | Monthly revenue summary |
-| top_products     | Best-selling products   |
-| payment_funnel   | Payment status analysis |
-
-Because Mart tables are derived entirely from the Warehouse layer, each execution refreshes the data using a **TRUNCATE + INSERT** strategy to ensure consistency.
+- Optimized for reporting
+- Simplified business queries
+- Refresh after Warehouse update
+- Supports BI dashboards
 
 ---
 
 # 🌬️ Apache Airflow Workflow
 
-Apache Airflow is responsible for orchestrating the complete ETL workflow.
+The ETL workflow is orchestrated using Apache Airflow.
 
-The pipeline is divided into four independent tasks executed sequentially.
+Current DAG:
 
 ```text
 extract_raw
@@ -199,53 +412,61 @@ mart_refresh
 quality_check
 ```
 
-### Task Description
+Task Description
 
-| Task                  | Description                                 |
-| --------------------- | ------------------------------------------- |
-| extract_raw           | Load Excel files into PostgreSQL Raw schema |
-| warehouse_incremental | Incrementally update Warehouse tables       |
-| mart_refresh          | Refresh analytical Data Mart tables         |
-| quality_check         | Validate ETL output                         |
+| Task                  | Description                                          |
+| --------------------- | ---------------------------------------------------- |
+| extract_raw           | Load exported Excel files into PostgreSQL Raw schema |
+| warehouse_incremental | Perform Incremental ETL into Warehouse               |
+| mart_refresh          | Refresh analytical Data Marts                        |
+| quality_check         | Validate loaded data                                 |
 
-Each task is isolated so that failures can be detected quickly. If any task fails, the downstream tasks are not executed.
+Each task executes independently.
+
+If any task fails:
+
+- Downstream tasks are skipped
+- Airflow marks the DAG as Failed
+- Error logs are available for debugging
 
 ---
 
-# ✅ Data Quality Validation
+# 🐳 Docker Environment
 
-To ensure that analytical data is reliable, the pipeline performs an automated Data Quality Check after all ETL stages have completed.
+The project is fully containerized using Docker Compose.
 
-Current validation rules include:
+Current services include:
 
-- Verify that Raw tables contain data
-- Verify that Warehouse tables contain data
-- Verify that Mart tables contain data
+- PostgreSQL
+- Apache Airflow Webserver
+- Apache Airflow Scheduler
+- pgAdmin
 
-Example output:
+Benefits:
 
-```text
-Running Data Quality Check...
-
-✓ raw.fact_orders: 195 rows
-✓ warehouse.fact_orders: 195 rows
-✓ mart.revenue_by_month: 7 rows
-
-All quality checks passed.
-```
-
-If any validation fails, an exception is raised and Apache Airflow marks the workflow as **Failed**.
-
-This quality gate prevents incomplete or invalid data from reaching downstream analytical layers.
+- Reproducible environment
+- Easy deployment
+- Consistent development setup
+- Simplified dependency management
 
 ---
 
 # 🚀 Getting Started
 
-## Clone the repository
+## Prerequisites
+
+Install:
+
+- Python 3.11
+- Docker Desktop
+- Git
+
+---
+
+## Clone Repository
 
 ```bash
-git clone https://github.com/<your-username>/ecommerce-data-engineering.git
+git clone https://github.com/DuyAnhNguyen1902/ecommerce-data-engineering.git
 
 cd ecommerce-data-engineering
 ```
@@ -254,7 +475,7 @@ cd ecommerce-data-engineering
 
 ## Configure Environment Variables
 
-Create a `.env` file based on `.env.example`.
+Create a `.env` file from `.env.example`.
 
 Example:
 
@@ -268,7 +489,7 @@ DB_PASSWORD=your_password
 
 ---
 
-## Start Docker Services
+## Start Docker
 
 ```bash
 docker compose up -d
@@ -282,11 +503,11 @@ This starts:
 
 ---
 
-## Run the ETL Pipeline
+## Run the Pipeline
 
-The recommended way is to trigger the workflow from Apache Airflow.
+The recommended approach is to trigger the DAG from Airflow.
 
-Pipeline:
+Pipeline execution:
 
 ```text
 extract_raw
@@ -298,7 +519,7 @@ mart_refresh
 quality_check
 ```
 
-Alternatively, each stage can be executed manually:
+Or execute each stage manually:
 
 ```bash
 python -m ingestion.load_raw
@@ -314,24 +535,39 @@ python -m quality.data_quality
 
 # 📈 Future Improvements
 
-Although the current pipeline is fully functional, several enhancements can further improve scalability and maintainability.
+Potential enhancements include:
 
-Planned improvements include:
+- GitHub Actions (CI/CD)
+- Unit Testing
+- Integration Testing
+- Additional Data Quality Rules
+- Slowly Changing Dimensions (SCD)
+- Monitoring & Alerting
+- Cloud Deployment (AWS, Azure, or GCP)
+- Power BI Dashboard
+- dbt Integration
 
-- CI/CD pipeline using GitHub Actions
-- Unit and integration testing
-- Additional Data Quality validation rules
-- Slowly Changing Dimension (SCD) implementation
-- Cloud deployment (AWS, Azure, or GCP)
-- Data lineage and metadata management
-- Monitoring and alerting
-- Migration to dbt for transformation management
-- Integration with Apache Kafka for streaming ingestion
+---
+
+# 📄 License
+
+This project is intended for educational purposes and as a personal Data Engineering portfolio project.
 
 ---
 
 # 👨‍💻 Author
 
-Developed as a personal Data Engineering portfolio project to demonstrate practical experience with ETL pipelines, PostgreSQL, Apache Airflow, Docker, and modern Data Warehouse architecture.
+**Duy Anh Nguyen**
 
-If you have any questions or suggestions, feel free to open an issue or connect via GitHub.
+This project was developed to demonstrate practical knowledge of:
+
+- Python
+- PostgreSQL
+- Apache Airflow
+- Docker
+- Selenium
+- Data Warehousing
+- Incremental ETL
+- Data Quality Validation
+
+If you have any questions or suggestions, feel free to open an issue or connect with me on GitHub.
