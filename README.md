@@ -48,7 +48,7 @@ The Mart layer refreshes analytical datasets using a **TRUNCATE + INSERT** strat
 
 Apache Airflow orchestrates the complete workflow while automated Data Quality Checks validate the pipeline before completion.
 
-The project is fully containerized using Docker and follows many of the architectural practices commonly found in modern Data Engineering environments.
+The project uses Docker Compose to containerize the PostgreSQL database and Apache Airflow environment, providing a consistent and reproducible setup for ETL execution while allowing the web application and Selenium scraper to run locally during development.
 
 ---
 
@@ -477,7 +477,7 @@ cd ecommerce-data-engineering
 
 Create a `.env` file from `.env.example`.
 
-Example:
+### Running inside Docker
 
 ```env
 DB_HOST=postgres
@@ -486,6 +486,20 @@ DB_NAME=ecommerce_dw
 DB_USER=postgres
 DB_PASSWORD=your_password
 ```
+
+Airflow containers communicate with PostgreSQL using the Docker network, so the hostname is `postgres` and the internal PostgreSQL port is `5432`.
+
+### Running from your local machine
+
+```env
+DB_HOST=localhost
+DB_PORT=5433
+DB_NAME=ecommerce_dw
+DB_USER=postgres
+DB_PASSWORD=your_password
+```
+
+When connecting from Windows (VS Code, pgAdmin or Python running outside Docker), PostgreSQL is exposed on port **5433** through Docker Compose.
 
 ---
 
@@ -500,6 +514,30 @@ This starts:
 - PostgreSQL
 - pgAdmin
 - Apache Airflow
+
+---
+
+### Verify PostgreSQL Connection
+
+If you are running Python scripts or pgAdmin on your **local machine**, connect to PostgreSQL using:
+
+```text
+Host: localhost
+Port: 5433
+Database: ecommerce_dw
+```
+
+The Docker Compose configuration maps PostgreSQL's internal port `5432` to port `5433` on the host machine.
+
+If you are running services **inside Docker** (such as Apache Airflow), use:
+
+```text
+Host: postgres
+Port: 5432
+Database: ecommerce_dw
+```
+
+Containers communicate through Docker's internal network, so the PostgreSQL service is reachable by its service name `postgres`.
 
 ---
 
