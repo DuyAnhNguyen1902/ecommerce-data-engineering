@@ -83,6 +83,7 @@ The project uses Docker Compose to containerize the PostgreSQL database and Apac
 | Docker                    | ✅     |
 | Data Quality              | ✅     |
 | Modular Python Project    | ✅     |
+| Power BI Dashboard        | ✅     |
 
 ---
 
@@ -638,7 +639,6 @@ Potential enhancements include:
 - Slowly Changing Dimensions (SCD)
 - Monitoring & Alerting
 - Cloud Deployment (AWS, Azure, or GCP)
-- Power BI Dashboard
 - dbt Integration
 
 ---
