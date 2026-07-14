@@ -607,5 +607,3 @@ This project was developed to demonstrate practical knowledge of:
 - Data Warehousing
 - Incremental ETL
 - Data Quality Validation
-
-If you have any questions or suggestions, feel free to open an issue or connect with me on GitHub.
