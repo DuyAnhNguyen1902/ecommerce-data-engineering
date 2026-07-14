@@ -1,3 +1,25 @@
+x-airflow-common: &airflow-common
+  build:
+    context: .
+    dockerfile: Dockerfile.airflow
+  restart: always
+  environment: &airflow-common-env
+    AIRFLOW__CORE__EXECUTOR: SequentialExecutor
+    AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+    AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW_SECRET_KEY}
+    DB_HOST: postgres
+    DB_PORT: 5432
+    DB_NAME: ${POSTGRES_DB}
+    DB_USER: ${POSTGRES_USER}
+    DB_PASSWORD: ${POSTGRES_PASSWORD}
+    BASE_FOLDER: /data/file_export
+    LOG_LEVEL: INFO
+  volumes:
+    - ./dags:/opt/airflow/dags
+    - ./:/opt/airflow/project
+    - ./file_export:/data/file_export
+
 services:
   postgres:
     image: postgres:16
@@ -26,32 +48,12 @@ services:
       - postgres
 
   airflow:
-    image: apache/airflow:2.10.5-python3.11
+    <<: *airflow-common
     container_name: ecommerce_airflow
-    restart: always
     depends_on:
       - postgres
-    environment:
-      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__WEBSERVER__SECRET_KEY: ecommerce_secret_key
-
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      BASE_FOLDER: /data/file_export
-      LOG_LEVEL: INFO
-
-      _PIP_ADDITIONAL_REQUIREMENTS: "pandas openpyxl psycopg2-binary python-dotenv"
     ports:
       - "8088:8080"
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./:/opt/airflow/project
-      - C:/Users/ASUS/Documents/Tu_hoc_python/file_export:/data/file_export
     command: >
       bash -c "
       airflow db migrate &&
@@ -66,30 +68,10 @@ services:
       "
 
   airflow_scheduler:
-    image: apache/airflow:2.10.5-python3.11
+    <<: *airflow-common
     container_name: ecommerce_airflow_scheduler
-    restart: always
     depends_on:
       - airflow
-    environment:
-      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
-      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-      AIRFLOW__WEBSERVER__SECRET_KEY: ecommerce_secret_key
-
-      DB_HOST: postgres
-      DB_PORT: 5432
-      DB_NAME: ${DB_NAME}
-      DB_USER: ${DB_USER}
-      DB_PASSWORD: ${DB_PASSWORD}
-      BASE_FOLDER: /data/file_export
-      LOG_LEVEL: INFO
-
-      _PIP_ADDITIONAL_REQUIREMENTS: "pandas openpyxl psycopg2-binary python-dotenv"
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./:/opt/airflow/project
-      - C:/Users/ASUS/Documents/Tu_hoc_python/file_export:/data/file_export
     command: airflow scheduler
 
 volumes:

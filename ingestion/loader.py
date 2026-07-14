@@ -1,4 +1,5 @@
 import pandas as pd
+from psycopg2 import sql
 from psycopg2.extras import execute_values
 
 
@@ -21,7 +22,10 @@ def convert_value(value):
 
 
 def truncate_raw_table(db, table_name):
-    query = f'TRUNCATE TABLE raw."{table_name}";'
+    query = sql.SQL("TRUNCATE TABLE {}.{}").format(
+        sql.Identifier("raw"),
+        sql.Identifier(table_name),
+    )
     db.execute(query)
 
 
@@ -29,12 +33,14 @@ def insert_dataframe_to_raw(db, df, table_name):
     df = clean_dataframe(df)
 
     columns = list(df.columns)
-    columns_sql = ", ".join([f'"{col}"' for col in columns])
-
-    query = f'''
-        INSERT INTO raw."{table_name}" ({columns_sql})
-        VALUES %s
-    '''
+    columns_sql = sql.SQL(", ").join(map(sql.Identifier, columns))
+    query = sql.SQL(
+        "INSERT INTO {}.{} ({}) VALUES %s"
+    ).format(
+        sql.Identifier("raw"),
+        sql.Identifier(table_name),
+        columns_sql,
+    ).as_string(db.conn)
 
     values = [
         tuple(convert_value(value) for value in row)

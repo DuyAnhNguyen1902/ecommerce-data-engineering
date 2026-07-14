@@ -1,4 +1,5 @@
 import pandas as pd
+from psycopg2 import sql
 
 
 def map_dtype_to_postgres(dtype):
@@ -22,14 +23,22 @@ def create_raw_table(db, df, table_name):
 
     for col in df.columns:
         pg_type = map_dtype_to_postgres(df[col].dtype)
-        columns.append(f'"{col}" {pg_type}')
+        columns.append(
+            sql.SQL("{} {}").format(sql.Identifier(col), sql.SQL(pg_type))
+        )
 
-    columns_sql = ",\n    ".join(columns)
+    columns_sql = sql.SQL(",\n    ").join(columns)
 
-    query = f"""
-    CREATE TABLE IF NOT EXISTS raw."{table_name}" (
-        {columns_sql}
-    );
-    """
+    query = sql.SQL(
+        """
+        CREATE TABLE IF NOT EXISTS {}.{} (
+            {}
+        );
+        """
+    ).format(
+        sql.Identifier("raw"),
+        sql.Identifier(table_name),
+        columns_sql,
+    )
 
     db.execute(query)

@@ -1,573 +1,279 @@
-# 🛒 Ecommerce Data Engineering Pipeline
+# Ecommerce Data Engineering Pipeline
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?logo=postgresql)
-![Apache Airflow](https://img.shields.io/badge/Apache-Airflow-red?logo=apacheairflow)
-![Docker](https://img.shields.io/badge/Docker-Containerized-blue?logo=docker)
-![GitHub](https://img.shields.io/badge/GitHub-Portfolio-black?logo=github)
+![Apache Airflow](https://img.shields.io/badge/Apache%20Airflow-2.10.5-red?logo=apacheairflow)
+![Docker](https://img.shields.io/badge/Docker-Compose-blue?logo=docker)
+![CI](https://img.shields.io/badge/CI-compileall%20%2B%20pytest-success?logo=githubactions)
 
-An end-to-end **Data Engineering pipeline** that automates data collection, ETL processing, data warehousing, workflow orchestration, and data quality validation for an e-commerce platform.
+An end-to-end data engineering portfolio project that collects e-commerce data,
+loads it into a layered PostgreSQL warehouse, builds analytical marts, and
+validates the result through an Apache Airflow workflow.
 
-The project demonstrates how transactional business data can be collected from a web application, transformed through a layered PostgreSQL Data Warehouse, and prepared for business analytics using modern Data Engineering practices.
-
----
-
-# 📑 Table of Contents
-
-- [Overview](#-overview)
-- [Key Features](#-key-features)
-- [Project Highlights](#-project-highlights)
-- [Skills Demonstrated](#-skills-demonstrated)
-- [Technology Stack](#-technology-stack)
-- [System Architecture](#-system-architecture)
-- [Data Collection](#-data-collection)
-- [Project Structure](#-project-structure)
-- [ETL Workflow](#-etl-workflow)
-- [Data Warehouse Design](#-data-warehouse-design)
-- [Apache Airflow Workflow](#-apache-airflow-workflow)
-- [Data Quality Validation](#-data-quality-validation)
-- [Getting Started](#-getting-started)
-- [Screenshots](#-screenshots)
-- [Future Improvements](#-future-improvements)
-- [License](#-license)
-- [Author](#-author)
-
----
-
-# 📌 Overview
-
-This project simulates a complete Data Engineering workflow for an e-commerce system.
-
-Unlike many portfolio projects that rely on static CSV datasets, this project begins with an automated **data collection process**. Selenium interacts with the Trendify e-commerce web application, authenticates users, exports business data into Excel files, and provides the input for the ETL pipeline.
-
-The exported data is loaded into PostgreSQL using a layered architecture consisting of **Raw**, **Warehouse**, and **Mart** schemas.
-
-The Warehouse layer implements **Incremental ETL** using PostgreSQL's `INSERT ... ON CONFLICT DO UPDATE` strategy, allowing the pipeline to insert new records while updating existing ones without creating duplicates.
-
-The Mart layer refreshes analytical datasets using a **TRUNCATE + INSERT** strategy, ensuring that reports always reflect the latest Warehouse data.
-
-Apache Airflow orchestrates the complete workflow while automated Data Quality Checks validate the pipeline before completion.
-
-The project is fully containerized using Docker and follows many of the architectural practices commonly found in modern Data Engineering environments.
-
----
-
-# ✨ Key Features
-
-- Automated data collection using Selenium
-- Layered PostgreSQL Data Warehouse
-- Incremental ETL using PostgreSQL UPSERT
-- Automated Data Mart refresh
-- Apache Airflow orchestration
-- Dockerized deployment
-- Automated Data Quality validation
-- Secure configuration using environment variables
-- Modular Python architecture
-- GitHub-ready project structure
-
----
-
-# 📊 Project Highlights
-
-| Feature                   | Status |
-| ------------------------- | ------ |
-| Automated Data Collection | ✅     |
-| PostgreSQL Data Warehouse | ✅     |
-| Raw Layer                 | ✅     |
-| Warehouse Layer           | ✅     |
-| Mart Layer                | ✅     |
-| Incremental ETL           | ✅     |
-| Airflow Workflow          | ✅     |
-| Docker                    | ✅     |
-| Data Quality              | ✅     |
-| Modular Python Project    | ✅     |
-
----
-
-# 💡 Skills Demonstrated
-
-This project demonstrates practical experience with:
-
-- Python ETL Development
-- PostgreSQL Database Design
-- Incremental Loading Strategies
-- Data Warehouse Architecture
-- Data Mart Design
-- Apache Airflow
-- Docker & Docker Compose
-- Selenium Web Automation
-- Data Quality Validation
-- Workflow Orchestration
-- SQL Data Transformation
-- Git & GitHub
-
----
-
-# 🛠 Technology Stack
-
-| Category                | Technology              |
-| ----------------------- | ----------------------- |
-| Programming Language    | Python 3.11             |
-| Database                | PostgreSQL              |
-| Workflow Orchestration  | Apache Airflow          |
-| Containerization        | Docker & Docker Compose |
-| Data Processing         | Pandas                  |
-| Web Automation          | Selenium                |
-| Database Administration | pgAdmin 4               |
-| Version Control         | Git & GitHub            |
-
----
-
-# 🏗 System Architecture
+## Architecture
 
 ```text
-                    +---------------------------+
-                    |   Trendify Web Platform   |
-                    | React + Spring Boot API   |
-                    +-------------+-------------+
-                                  |
-                                  |
-                                  ▼
-                    +---------------------------+
-                    |   Selenium Data Scraper   |
-                    +-------------+-------------+
-                                  |
-                                  |
-                                  ▼
-                    +---------------------------+
-                    |     Excel Export Files    |
-                    +-------------+-------------+
-                                  |
-                                  |
-                                  ▼
-                    +---------------------------+
-                    |     PostgreSQL Raw Layer  |
-                    +-------------+-------------+
-                                  |
-                                  |
-                                  ▼
-                    +---------------------------+
-                    | Warehouse Incremental ETL |
-                    | INSERT ... ON CONFLICT    |
-                    +-------------+-------------+
-                                  |
-                                  |
-                                  ▼
-                    +---------------------------+
-                    |       Data Mart Layer     |
-                    |   Aggregated Analytics    |
-                    +-------------+-------------+
-                                  |
-                                  |
-                                  ▼
-                    +---------------------------+
-                    |    Data Quality Checks    |
-                    +-------------+-------------+
-                                  |
-                                  |
-                                  ▼
-                    +---------------------------+
-                    |    Ready for Analytics    |
-                    +---------------------------+
-
-             Apache Airflow orchestrates the ETL workflow
+Trendify web application
+        |
+        v
+Selenium scraper -> Excel export files
+        |
+        v
+PostgreSQL raw schema
+        |
+        v
+Incremental warehouse ETL (INSERT ... ON CONFLICT DO UPDATE)
+        |
+        v
+Data marts (revenue, products, payment funnel)
+        |
+        v
+Data quality checks -> Power BI / analytics
 ```
 
----
-
-# 🕷 Data Collection
-
-Unlike many ETL projects that use pre-existing CSV datasets, this project starts with automated data acquisition.
-
-The Selenium scraper performs the following operations:
-
-1. Launches the Trendify web application.
-2. Authenticates with a valid administrator account.
-3. Navigates through the administration pages.
-4. Exports business data into Excel files.
-5. Stores exported files locally for downstream ETL processing.
-
-The exported Excel files become the input source for the Apache Airflow ETL pipeline.
-
----
-
-# 📂 Project Structure
+Airflow runs the data pipeline in this order:
 
 ```text
-ecommerce-data-engineering
-│
-├── config/
-├── dags/
-├── ingestion/
-├── warehouse/
-├── mart/
-├── quality/
-├── scraper/
-├── sql/
-│   ├── warehouse_init.sql
-│   ├── warehouse_incremental.sql
-│   ├── mart_init.sql
-│   └── mart_refresh.sql
-│
-├── logs/
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── README.md
-└── .env.example
+extract_raw -> warehouse_incremental -> mart_refresh -> quality_check
 ```
 
----
+## What is containerized
 
-# ⚙️ ETL Workflow
+Docker Compose provides the database and workflow-orchestration environment:
 
-The ETL pipeline is orchestrated by Apache Airflow and consists of four independent stages.
+- PostgreSQL 16
+- pgAdmin 4
+- Apache Airflow webserver
+- Apache Airflow scheduler
 
-Each stage has a single responsibility and only starts after the previous stage has completed successfully.
+The Airflow services are built from `Dockerfile.airflow`, which installs the
+pinned Python dependencies from `requirements.txt`. The React frontend, Spring
+Boot backend, Selenium browser, and Chrome driver are currently run on the host;
+they are not included as Docker Compose services.
 
-## 1. Data Collection
-
-Business data is collected automatically from the Trendify web application using Selenium.
-
-The scraper:
-
-- Opens the Trendify application
-- Authenticates using administrator credentials
-- Navigates through administration pages
-- Exports business data into Excel files
-- Saves exported files locally
-
----
-
-## 2. Raw Layer
-
-The exported Excel files are loaded into the PostgreSQL **Raw** schema.
-
-Purpose:
-
-- Preserve original source data
-- Separate ingestion from transformation
-- Provide traceability
-- Simplify debugging
-
-Current Raw tables:
-
-- fact_orders
-- fact_order_items
-- fact_payments
-- fact_reviews
-- fact_product_sales
-- dim_products
-- dim_inventory_status
-
----
-
-## 3. Warehouse Layer
-
-The Warehouse layer transforms raw data into standardized analytical tables.
-
-Unlike a full refresh approach, the Warehouse implements **Incremental ETL** using PostgreSQL's UPSERT functionality.
-
-```sql
-INSERT ...
-ON CONFLICT (...)
-DO UPDATE
-```
-
-Advantages:
-
-- Prevents duplicate records
-- Supports repeated pipeline execution
-- Updates existing records automatically
-- Reduces processing time
-- Simulates production ETL practices
-
----
-
-## 4. Mart Layer
-
-The Mart layer stores aggregated business information for reporting and analytics.
-
-Instead of incremental loading, Data Marts are refreshed using:
+## Project structure
 
 ```text
-TRUNCATE
-
-↓
-
-INSERT
+.
+|-- config/                 Environment and logging configuration
+|-- dags/                   Airflow DAG
+|-- ingestion/              Excel-to-raw loading
+|-- warehouse/              Incremental warehouse loader
+|-- mart/                   Data mart refresh
+|-- quality/                Data quality rules
+|-- scraper/                Selenium data collection
+|-- sql/                    Schema, warehouse, and mart SQL
+|-- tests/                  Automated Python tests
+|-- .github/workflows/      Continuous integration
+|-- Dockerfile              Standalone ingestion image
+|-- Dockerfile.airflow      Airflow image with project dependencies
+`-- docker-compose.yml      Local database and Airflow services
 ```
 
-Current Data Marts:
+## Warehouse design
 
-| Table            | Description             |
-| ---------------- | ----------------------- |
-| revenue_by_month | Monthly revenue summary |
-| top_products     | Product performance     |
-| payment_funnel   | Payment status analysis |
+### Raw
 
-This strategy guarantees that reports always reflect the latest Warehouse data.
+The raw schema preserves the exported source data with minimal transformation.
+The loader truncates each raw table before loading the newest Excel export.
 
----
+### Warehouse
 
-## 5. Data Quality Validation
+The warehouse schema standardizes types and applies incremental UPSERTs. Primary
+and composite keys make repeated executions idempotent for the current model.
 
-The final stage validates the ETL pipeline before completion.
+Main tables include:
 
-Current validation rules:
+- `warehouse.dim_products`
+- `warehouse.fact_orders`
+- `warehouse.fact_order_items`
+- `warehouse.fact_payments`
+- `warehouse.fact_reviews`
+- `warehouse.fact_product_sales`
+- `warehouse.dim_inventory_status`
 
-- Raw tables contain data
-- Warehouse tables contain data
-- Mart tables contain data
+### Mart
 
-Example:
+The mart layer uses `TRUNCATE + INSERT` to rebuild small analytical tables after
+the warehouse load:
 
-```text
-Running Data Quality Check...
+| Mart | Purpose |
+| --- | --- |
+| `mart.revenue_by_month` | Monthly orders, revenue, discounts, and customers |
+| `mart.top_products` | Product sales and order performance |
+| `mart.payment_funnel` | Payment-status counts and amounts |
 
-✓ raw.fact_orders: 195 rows
-✓ warehouse.fact_orders: 195 rows
-✓ mart.revenue_by_month: 7 rows
+## Data quality validation
 
-All quality checks passed.
-```
+The quality task uses one database connection for the complete validation run.
+Schema and table names are quoted with `psycopg2.sql.Identifier` rather than
+interpolated into SQL strings.
 
-If any validation fails, Apache Airflow marks the workflow as **Failed**.
+The current rules verify:
 
----
+- important Raw, Warehouse, and Mart tables are not empty;
+- key columns are not `NULL`;
+- primary and composite business keys are not duplicated;
+- order items do not reference missing orders;
+- order, item, payment, product, sales, and inventory values are not negative;
+- review ratings are within the 1-5 range;
+- monthly Mart revenue matches the monthly Warehouse aggregation.
 
-# 🗄️ Data Warehouse Design
+Any failed rule raises an error, so Airflow marks the quality task and DAG run as
+failed.
 
-The project follows a classic three-layer Data Warehouse architecture.
+## Getting started
 
-```text
-Source System
-      │
-      ▼
-Raw Layer
-      │
-      ▼
-Warehouse Layer
-      │
-      ▼
-Mart Layer
-```
+### Prerequisites
 
-## Raw Layer
-
-Stores exported business data exactly as received from the source system.
-
-Characteristics:
-
-- Minimal transformation
-- Source of truth
-- Easy to reload
-- Easy to audit
-
----
-
-## Warehouse Layer
-
-Stores cleaned and standardized business data.
-
-Characteristics:
-
-- Structured schema
-- Incremental loading
-- UPSERT strategy
-- Primary Keys
-- Analytics-ready
-
----
-
-## Mart Layer
-
-Stores aggregated business metrics.
-
-Characteristics:
-
-- Optimized for reporting
-- Simplified business queries
-- Refresh after Warehouse update
-- Supports BI dashboards
-
----
-
-# 🌬️ Apache Airflow Workflow
-
-The ETL workflow is orchestrated using Apache Airflow.
-
-Current DAG:
-
-```text
-extract_raw
-      │
-      ▼
-warehouse_incremental
-      │
-      ▼
-mart_refresh
-      │
-      ▼
-quality_check
-```
-
-Task Description
-
-| Task                  | Description                                          |
-| --------------------- | ---------------------------------------------------- |
-| extract_raw           | Load exported Excel files into PostgreSQL Raw schema |
-| warehouse_incremental | Perform Incremental ETL into Warehouse               |
-| mart_refresh          | Refresh analytical Data Marts                        |
-| quality_check         | Validate loaded data                                 |
-
-Each task executes independently.
-
-If any task fails:
-
-- Downstream tasks are skipped
-- Airflow marks the DAG as Failed
-- Error logs are available for debugging
-
----
-
-# 🐳 Docker Environment
-
-The project is fully containerized using Docker Compose.
-
-Current services include:
-
-- PostgreSQL
-- Apache Airflow Webserver
-- Apache Airflow Scheduler
-- pgAdmin
-
-Benefits:
-
-- Reproducible environment
-- Easy deployment
-- Consistent development setup
-- Simplified dependency management
-
----
-
-# 🚀 Getting Started
-
-## Prerequisites
-
-Install:
-
-- Python 3.11
-- Docker Desktop
 - Git
+- Docker Desktop with Docker Compose
+- Python 3.11 for running modules or tests directly
+- Access to the separate Trendify frontend/backend when collecting new exports
 
----
-
-## Clone Repository
+### 1. Clone and configure
 
 ```bash
 git clone https://github.com/DuyAnhNguyen1902/ecommerce-data-engineering.git
-
 cd ecommerce-data-engineering
+cp .env.example .env
 ```
 
----
+On Windows PowerShell, use:
 
-## Configure Environment Variables
-
-Create a `.env` file from `.env.example`.
-
-Example:
-
-```env
-DB_HOST=postgres
-DB_PORT=5432
-DB_NAME=ecommerce_dw
-DB_USER=postgres
-DB_PASSWORD=your_password
+```powershell
+Copy-Item .env.example .env
 ```
 
----
+Replace every `change_me` value and set application/scraper paths as needed.
+Generate a long random value for `AIRFLOW_SECRET_KEY`; do not commit `.env`.
 
-## Start Docker
+### PostgreSQL ports: host versus Docker network
+
+There are two valid PostgreSQL endpoints because Docker publishes a different
+host port:
+
+| Caller | Host | Port | Example |
+| --- | --- | ---: | --- |
+| Python/Power BI/psql on your computer | `localhost` | `5433` | `localhost:5433` |
+| Airflow or another Compose service | `postgres` | `5432` | `postgres:5432` |
+
+The mapping in Compose is `5433:5432`: port 5433 belongs to the host, while port
+5432 remains PostgreSQL's internal container port. `.env.example` therefore uses
+`DB_HOST=localhost` and `DB_PORT=5433` for host-side commands; Compose overrides
+these values inside Airflow with `postgres:5432`.
+
+### 2. Prepare input files
+
+Place the exported Excel workbook in `./file_export`. Compose mounts this relative
+directory at `/data/file_export` for both Airflow services, so the setup works
+regardless of the repository's absolute location.
+
+To collect a fresh export on the host, configure `APP_URL`, `LOGIN_EMAIL`,
+`LOGIN_PASSWORD`, `FRONTEND_PATH`, `BACKEND_PATH`, and `BASE_FOLDER`, then run:
 
 ```bash
-docker compose up -d
+python -m scraper.scraping
 ```
 
-This starts:
+### 3. Start the services
 
-- PostgreSQL
-- pgAdmin
-- Apache Airflow
-
----
-
-## Run the Pipeline
-
-The recommended approach is to trigger the DAG from Airflow.
-
-Pipeline execution:
-
-```text
-extract_raw
-      ↓
-warehouse_incremental
-      ↓
-mart_refresh
-      ↓
-quality_check
+```bash
+docker compose up --build -d
+docker compose ps
 ```
 
-Or execute each stage manually:
+Service URLs:
+
+- Airflow: <http://localhost:8088>
+- pgAdmin: <http://localhost:5050>
+- PostgreSQL from host tools: `localhost:5433`
+
+Trigger `ecommerce_data_pipeline` from the Airflow UI after the Excel export is
+available.
+
+### 4. Run pipeline stages manually
+
+With the Python dependencies installed and the host-side database settings in
+`.env`:
 
 ```bash
 python -m ingestion.load_raw
-
 python -m warehouse.load_warehouse
-
 python -m mart.load_mart
-
 python -m quality.data_quality
 ```
 
----
+## Development and tests
 
-# 📈 Future Improvements
+Create a virtual environment and install the pinned dependencies:
 
-Potential enhancements include:
+```bash
+python -m venv .venv
+python -m pip install -r requirements.txt
+```
 
-- GitHub Actions (CI/CD)
-- Unit Testing
-- Integration Testing
-- Additional Data Quality Rules
-- Slowly Changing Dimensions (SCD)
-- Monitoring & Alerting
-- Cloud Deployment (AWS, Azure, or GCP)
-- Power BI Dashboard
-- dbt Integration
+Run the same checks used by GitHub Actions:
 
----
+```bash
+python -m compileall -q .
+pytest -q
+```
 
-# 📄 License
+The CI workflow runs both commands on pushes and pull requests with Python 3.11.
+The current unit tests exercise the quality-check connection lifecycle and input
+validation without requiring a live database. The full pipeline remains an
+integration test and requires PostgreSQL plus a representative Excel export.
 
-This project is intended for educational purposes and as a personal Data Engineering portfolio project.
+## Power BI
 
----
+Connect Power BI Desktop to PostgreSQL using:
 
-# 👨‍💻 Author
+- Server: `localhost:5433`
+- Database: the value of `POSTGRES_DB` (default `ecommerce_dw`)
+- Tables: `mart.revenue_by_month`, `mart.top_products`, and
+  `mart.payment_funnel`
+
+Suggested report pages and KPIs:
+
+- Executive overview: total revenue, total orders, unique customers, and average
+  order value;
+- Revenue trend: monthly revenue and discount trend;
+- Product performance: top products by revenue and quantity;
+- Payments: payment-status funnel and total payment amount.
+
+Refresh the report after a successful Airflow DAG run. Store credentials in the
+Power BI data-source settings rather than in the `.pbix` documentation or Git.
+
+## Portfolio screenshots to add
+
+Add sanitized images under `docs/screenshots/` and reference them from this
+README. A strong portfolio walkthrough should include:
+
+1. Airflow graph view showing all four tasks in a successful DAG run.
+2. pgAdmin schema browser showing `raw`, `warehouse`, `mart`, and `metadata`.
+3. A warehouse entity-relationship diagram with key relationships.
+4. Data quality task logs showing representative passing rules.
+5. A Power BI dashboard with the KPIs and charts listed above.
+
+Do not include passwords, email credentials, tokens, or customer personal data
+in screenshots.
+
+## Current limitations and next steps
+
+- Airflow metadata and analytical tables currently share one PostgreSQL database;
+  separate them for a production-style deployment.
+- The scraper depends on a separately running Trendify application and local
+  Chrome environment.
+- Add PostgreSQL integration tests with seeded fixtures.
+- Add alerting, lineage, and freshness checks.
+- Consider dbt for transformation testing and documentation.
+- Containerize the source application and browser only if full end-to-end local
+  deployment becomes a project goal.
+
+## Author
 
 **Duy Anh Nguyen**
 
-This project was developed to demonstrate practical knowledge of:
-
-- Python
-- PostgreSQL
-- Apache Airflow
-- Docker
-- Selenium
-- Data Warehousing
-- Incremental ETL
-- Data Quality Validation
-
-If you have any questions or suggestions, feel free to open an issue or connect with me on GitHub.
+Built as a portfolio demonstration of Python, PostgreSQL, Airflow, Docker,
+Selenium, incremental ETL, data marts, and data quality engineering.
