@@ -46,6 +46,8 @@ The Warehouse layer implements **Incremental ETL** using PostgreSQL's `INSERT ..
 
 The Mart layer refreshes analytical datasets using a **TRUNCATE + INSERT** strategy, ensuring that reports always reflect the latest Warehouse data.
 
+The processed business data can also be explored through an interactive Power BI dashboard for KPI monitoring and business reporting.
+
 Apache Airflow orchestrates the complete workflow while automated Data Quality Checks validate the pipeline before completion.
 
 The project uses Docker Compose to containerize the PostgreSQL database and Apache Airflow environment, providing a consistent and reproducible setup for ETL execution while allowing the web application and Selenium scraper to run locally during development.
@@ -100,6 +102,10 @@ This project demonstrates practical experience with:
 - Workflow Orchestration
 - SQL Data Transformation
 - Git & GitHub
+- Power BI Dashboard Development
+- Business Intelligence Reporting
+- Data Visualization
+- DAX
 
 ---
 
@@ -115,6 +121,7 @@ This project demonstrates practical experience with:
 | Web Automation          | Selenium                |
 | Database Administration | pgAdmin 4               |
 | Version Control         | Git & GitHub            |
+| Business Intelligence   | Power BI Desktop        |
 
 ---
 
@@ -167,7 +174,12 @@ This project demonstrates practical experience with:
                                   |
                                   ▼
                     +---------------------------+
-                    |    Ready for Analytics    |
+                    |    Power BI Dashboard     |
+                    +---------------------------+
+                                  |
+                                  ▼
+                    +---------------------------+
+                    |     Business Insights     |
                     +---------------------------+
 
              Apache Airflow orchestrates the ETL workflow
@@ -428,6 +440,51 @@ If any task fails:
 - Downstream tasks are skipped
 - Airflow marks the DAG as Failed
 - Error logs are available for debugging
+
+---
+
+# 📊 Business Intelligence Dashboard
+
+To demonstrate the Business Intelligence layer of the project, an interactive Power BI dashboard is included.
+
+The dashboard was developed on the original SQL Server implementation of the data warehouse and is preserved in this repository as part of the complete analytics workflow.
+
+Although the ETL pipeline has been upgraded to PostgreSQL, Docker, and Apache Airflow, the dashboard design remains applicable for business reporting and KPI analysis.
+
+### Dashboard Pages
+
+#### Executive Overview
+
+- Total Revenue
+- Total Orders
+- Average Order Value
+- Revenue Trend
+- Revenue by Payment Method
+- Order Status Distribution
+
+#### Product Analytics
+
+- Top Selling Products
+- Revenue by Product
+- Revenue by Category
+- Product Ranking
+
+#### Payment Analytics
+
+- Payment Status
+- Payment Method Distribution
+- Successful Payments
+- Failed Payments
+
+### Business Value
+
+The dashboard enables business users to:
+
+- Monitor sales performance
+- Analyze customer purchasing behavior
+- Track payment performance
+- Identify top-performing products
+- Support data-driven business decisions
 
 ---
 
