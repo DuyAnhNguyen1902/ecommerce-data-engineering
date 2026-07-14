@@ -575,7 +575,6 @@ python -m quality.data_quality
 
 Potential enhancements include:
 
-- GitHub Actions (CI/CD)
 - Unit Testing
 - Integration Testing
 - Additional Data Quality Rules
