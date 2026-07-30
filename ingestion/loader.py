@@ -1,13 +1,15 @@
 import pandas as pd
+from psycopg2 import sql
 from psycopg2.extras import execute_values
 
 
-def clean_dataframe(df):
-    df = df.copy()
+def clean_dataframe(dataframe):
+    cleaned_dataframe = dataframe.copy()
 
-    df = df.where(pd.notnull(df), None)
-
-    return df
+    return cleaned_dataframe.where(
+        pd.notnull(cleaned_dataframe),
+        None,
+    )
 
 
 def convert_value(value):
@@ -21,31 +23,52 @@ def convert_value(value):
 
 
 def truncate_raw_table(db, table_name):
-    query = f'TRUNCATE TABLE raw."{table_name}";'
-    db.execute(query)
+    query = sql.SQL(
+        "TRUNCATE TABLE {}.{}"
+    ).format(
+        sql.Identifier("raw"),
+        sql.Identifier(table_name),
+    )
+
+    db.execute(query, commit=False)
 
 
-def insert_dataframe_to_raw(db, df, table_name):
-    df = clean_dataframe(df)
+def insert_dataframe_to_raw(
+    db,
+    dataframe,
+    table_name,
+):
+    dataframe = clean_dataframe(dataframe)
 
-    columns = list(df.columns)
-    columns_sql = ", ".join([f'"{col}"' for col in columns])
+    if dataframe.empty:
+        return 0
 
-    query = f'''
-        INSERT INTO raw."{table_name}" ({columns_sql})
-        VALUES %s
-    '''
+    columns = list(dataframe.columns)
+
+    query = sql.SQL(
+        "INSERT INTO {}.{} ({}) VALUES %s"
+    ).format(
+        sql.Identifier("raw"),
+        sql.Identifier(table_name),
+        sql.SQL(", ").join(
+            sql.Identifier(column)
+            for column in columns
+        ),
+    )
 
     values = [
-        tuple(convert_value(value) for value in row)
-        for row in df.to_numpy()
+        tuple(
+            convert_value(value)
+            for value in row
+        )
+        for row in dataframe.to_numpy()
     ]
 
     execute_values(
         db.cursor,
-        query,
+        query.as_string(db.conn),
         values,
-        page_size=1000
+        page_size=1000,
     )
 
-    db.conn.commit()
+    return len(values)
