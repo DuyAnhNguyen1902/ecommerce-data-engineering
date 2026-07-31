@@ -56,15 +56,20 @@ The project uses Docker Compose to containerize the PostgreSQL database and Apac
 
 # ✨ Key Features
 
-- Automated data collection using Selenium
-- Layered PostgreSQL Data Warehouse
-- Incremental ETL using PostgreSQL UPSERT
-- Automated Data Mart refresh
-- Apache Airflow orchestration
-- Dockerized deployment
-- Automated Data Quality validation
-- Secure configuration using environment variables
-- Modular Python architecture
+- Automated data collection from the Trendify platform using Selenium
+- Automated ingestion of the latest Excel export
+- Layered PostgreSQL architecture: Raw → Warehouse → Mart
+- Schema contracts and validation for Raw data
+- Incremental and idempotent Warehouse loading using PostgreSQL UPSERT
+- Automated Data Mart refresh for analytics
+- End-to-end workflow orchestration with Apache Airflow
+- Automated Data Quality validation with 19 checks
+- Centralized ETL audit logging in `metadata.etl_job_log`
+- Retry, timeout, and error-handling mechanisms
+- Dockerized development and deployment environment
+- Secure configuration management using environment variables
+- Modular and maintainable Python architecture
+- Power BI-ready analytical datasets
 - GitHub-ready project structure
 
 ---
@@ -134,56 +139,54 @@ This project demonstrates practical experience with:
                     | React + Spring Boot API   |
                     +-------------+-------------+
                                   |
-                                  |
                                   ▼
                     +---------------------------+
                     |   Selenium Data Scraper   |
+                    |   Runs on Local Machine   |
                     +-------------+-------------+
                                   |
-                                  |
                                   ▼
                     +---------------------------+
-                    |     Excel Export Files    |
+                    |    Latest Excel Export    |
+                    |     7 Source Sheets       |
                     +-------------+-------------+
                                   |
-                                  |
                                   ▼
                     +---------------------------+
-                    |     PostgreSQL Raw Layer  |
+                    |    PostgreSQL Raw Layer   |
+                    | Schema Contract Validation|
                     +-------------+-------------+
                                   |
-                                  |
                                   ▼
                     +---------------------------+
-                    | Warehouse Incremental ETL |
-                    | INSERT ... ON CONFLICT    |
+                    | PostgreSQL Warehouse Layer|
+                    | Incremental UPSERT Loading|
                     +-------------+-------------+
                                   |
-                                  |
                                   ▼
                     +---------------------------+
-                    |       Data Mart Layer     |
-                    |   Aggregated Analytics    |
+                    | PostgreSQL Data Mart Layer|
+                    |   Analytics Aggregations  |
                     +-------------+-------------+
                                   |
-                                  |
-                                  ▼
-                    +---------------------------+
-                    |    Data Quality Checks    |
-                    +-------------+-------------+
-                                  |
-                                  |
-                                  ▼
-                    +---------------------------+
-                    |    Power BI Dashboard     |
-                    +---------------------------+
-                                  |
-                                  ▼
-                    +---------------------------+
-                    |     Business Insights     |
-                    +---------------------------+
+                      +-----------+-----------+
+                      |                       |
+                      ▼                       ▼
+        +---------------------------+   +---------------------------+
+        |    Data Quality Checks    |   |    Power BI Dashboard     |
+        |      19 Validations       |   |   Business Analytics      |
+        +---------------------------+   +-------------+-------------+
+                                                    |
+                                                    ▼
+                                      +---------------------------+
+                                      |     Business Insights     |
+                                      +---------------------------+
 
-             Apache Airflow orchestrates the ETL workflow
+        Apache Airflow orchestrates:
+        Raw Load → Warehouse Load → Mart Load → Data Quality
+
+        All ETL executions are recorded in:
+        metadata.etl_job_log
 ```
 
 ---
@@ -207,27 +210,53 @@ The exported Excel files become the input source for the Apache Airflow ETL pipe
 # 📂 Project Structure
 
 ```text
-ecommerce-data-engineering
+ecommerce-data-engineering/
 │
 ├── config/
-├── dags/
-├── ingestion/
-├── warehouse/
-├── mart/
-├── quality/
-├── scraper/
-├── sql/
-│   ├── warehouse_init.sql
-│   ├── warehouse_incremental.sql
-│   ├── mart_init.sql
-│   └── mart_refresh.sql
+│   ├── logging_config.py          # Centralized logging configuration
+│   └── settings.py                # Environment and database settings
 │
-├── logs/
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── README.md
-└── .env.example
+├── dags/
+│   └── ecommerce_pipeline_dag.py  # Airflow DAG for the ETL workflow
+│
+├── ingestion/
+│   ├── audit.py                   # ETL execution audit logging
+│   ├── database.py                # PostgreSQL connection and SQL execution
+│   ├── excel_reader.py            # Latest Excel file discovery and reading
+│   ├── loader.py                  # Bulk loading into PostgreSQL
+│   ├── load_raw.py                # Raw-layer ingestion entry point
+│   ├── raw_schema.py              # Raw schema contracts
+│   └── table_creator.py           # Table creation and schema validation
+│
+├── warehouse/
+│   └── load_warehouse.py          # Warehouse initialization and UPSERT loading
+│
+├── mart/
+│   └── load_mart.py               # Analytical Data Mart refresh
+│
+├── quality/
+│   └── data_quality.py            # Automated Data Quality checks
+│
+├── scraper/
+│   ├── browser.py                 # Selenium browser configuration
+│   ├── login.py                   # Trendify authentication
+│   ├── scraping.py                # Excel export automation
+│   └── server.py                  # Local Trendify service startup
+│
+├── sql/
+│   ├── warehouse_init.sql         # Warehouse tables and constraints
+│   ├── warehouse_incremental.sql  # Incremental Warehouse UPSERT logic
+│   ├── mart_init.sql              # Data Mart table definitions
+│   └── mart_refresh.sql           # Data Mart refresh queries
+│
+├── logs/                          # Local pipeline logs
+│
+├── Dockerfile                     # Airflow/Python container image
+├── docker-compose.yml             # PostgreSQL, Airflow and pgAdmin services
+├── requirements.txt               # Python dependencies
+├── .env.example                   # Environment variable template
+├── .gitignore
+└── README.md
 ```
 
 ---
@@ -254,24 +283,36 @@ The scraper:
 
 ## 2. Raw Layer
 
-The exported Excel files are loaded into the PostgreSQL **Raw** schema.
+The latest exported Excel file is automatically discovered and loaded into the PostgreSQL `raw` schema.
 
-Purpose:
+The Raw Layer preserves source-level records while standardizing column names to `snake_case` for consistent downstream processing.
 
-- Preserve original source data
-- Separate ingestion from transformation
-- Provide traceability
-- Simplify debugging
+### Purpose
 
-Current Raw tables:
+- Preserve source-level data before business transformations
+- Separate data ingestion from transformation logic
+- Validate source columns using predefined schema contracts
+- Provide traceability through centralized ETL audit logs
+- Simplify debugging and pipeline recovery
 
-- fact_orders
-- fact_order_items
-- fact_payments
-- fact_reviews
-- fact_product_sales
-- dim_products
-- dim_inventory_status
+### Ingestion Process
+
+- Selects the latest Excel export automatically
+- Loads only the seven approved source sheets
+- Skips non-source sheets, including existing Mart exports
+- Validates table structures against schema contracts
+- Bulk loads records into PostgreSQL
+- Records execution status, row counts, duration, and errors in `metadata.etl_job_log`
+
+### Raw Tables
+
+- `fact_orders`
+- `fact_order_items`
+- `fact_payments`
+- `fact_reviews`
+- `fact_product_sales`
+- `dim_products`
+- `dim_inventory_status`
 
 ---
 
@@ -299,53 +340,74 @@ Advantages:
 
 ## 4. Mart Layer
 
-The Mart layer stores aggregated business information for reporting and analytics.
+The Mart Layer contains aggregated, analytics-ready datasets derived from the Warehouse Layer for reporting and Power BI dashboards.
 
-Instead of incremental loading, Data Marts are refreshed using:
+Unlike the incremental UPSERT strategy used in the Warehouse Layer, Data Marts are rebuilt using a full-refresh approach:
 
 ```text
 TRUNCATE
-
-↓
-
+   ↓
 INSERT
 ```
 
-Current Data Marts:
+### Purpose
 
-| Table            | Description             |
-| ---------------- | ----------------------- |
-| revenue_by_month | Monthly revenue summary |
-| top_products     | Product performance     |
-| payment_funnel   | Payment status analysis |
+- Provide business-focused analytical datasets
+- Pre-aggregate frequently used reporting metrics
+- Simplify Power BI data modeling
+- Improve dashboard query performance
+- Ensure reports reflect the latest successfully loaded Warehouse data
 
-This strategy guarantees that reports always reflect the latest Warehouse data.
+### Data Marts
+
+| Table                  | Description                                       |
+| ---------------------- | ------------------------------------------------- |
+| `revenue_by_month`     | Monthly revenue and order summary                 |
+| `top_products`         | Product sales and performance analysis            |
+| `customer_segments`    | Customer segmentation and purchasing behavior     |
+| `payment_funnel`       | Payment method and payment status analysis        |
+| `category_performance` | Revenue and sales performance by product category |
+
+The full-refresh process is automatically executed by the `load_mart` Airflow task after the Warehouse load completes successfully.
 
 ---
 
 ## 5. Data Quality Validation
 
-The final stage validates the ETL pipeline before completion.
+The final stage validates data completeness, integrity, and consistency before the ETL workflow is marked as successful.
 
-Current validation rules:
+The pipeline performs 19 automated Data Quality checks across the Raw, Warehouse, and Mart layers.
 
-- Raw tables contain data
-- Warehouse tables contain data
-- Mart tables contain data
+### Validation Rules
 
-Example:
+- Required tables exist and contain data
+- Primary key columns do not contain null values
+- Primary key values are unique
+- Warehouse records maintain valid relationships
+- Numeric business values are non-negative
+- Mart aggregations are consistent with Warehouse data
+- Analytical tables contain valid reporting results
+
+Example output:
 
 ```text
-Running Data Quality Check...
+Running Data Quality Checks...
 
 ✓ raw.fact_orders: 195 rows
 ✓ warehouse.fact_orders: 195 rows
 ✓ mart.revenue_by_month: 7 rows
+✓ Primary key validation passed
+✓ Duplicate validation passed
+✓ Referential integrity validation passed
+✓ Non-negative value validation passed
+✓ Mart consistency validation passed
 
-All quality checks passed.
+All 19 Data Quality checks passed.
 ```
 
-If any validation fails, Apache Airflow marks the workflow as **Failed**.
+The `data_quality` task runs only after the Raw, Warehouse, and Mart loading tasks have completed successfully.
+
+If any validation fails, the process raises an error and Apache Airflow marks the `data_quality` task and the entire workflow as **Failed**, preventing invalid data from being treated as analytics-ready.
 
 ---
 
@@ -618,13 +680,10 @@ quality_check
 Or execute each stage manually:
 
 ```bash
-python -m ingestion.load_raw
-
-python -m warehouse.load_warehouse
-
-python -m mart.load_mart
-
-python -m quality.data_quality
+docker compose exec airflow_scheduler bash -lc "cd /opt/airflow/project && python -m ingestion.load_raw"
+docker compose exec airflow_scheduler bash -lc "cd /opt/airflow/project && python -m warehouse.load_warehouse"
+docker compose exec airflow_scheduler bash -lc "cd /opt/airflow/project && python -m mart.load_mart"
+docker compose exec airflow_scheduler bash -lc "cd /opt/airflow/project && python -m quality.data_quality"
 ```
 
 ---
@@ -635,7 +694,6 @@ Potential enhancements include:
 
 - Unit Testing
 - Integration Testing
-- Additional Data Quality Rules
 - Slowly Changing Dimensions (SCD)
 - Monitoring & Alerting
 - Cloud Deployment (AWS, Azure, or GCP)
